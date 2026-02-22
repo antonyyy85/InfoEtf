@@ -333,6 +333,21 @@ th:nth-child(8) {
     text-align: center;
 }
 
+/* Positive/Negative colors for percentage columns */
+td.positive {
+    color: #166534;
+    font-weight: 600;
+}
+
+td.negative {
+    color: #991b1b;
+    font-weight: 600;
+}
+
+td.neutral {
+    color: #334155;
+}
+
 /* Space before percentage columns */
 td:nth-child(6),
 td:nth-child(7) {

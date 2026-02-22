@@ -179,6 +179,7 @@ function renderSavedTable(records) {
         tr.addEventListener('dragend', handleDragEnd);
         tr.addEventListener('click', () => showPopup(record));
         const pctText = Number.isFinite(record.changePct) ? `${record.changePct.toFixed(2)} %` : '-';
+        const pctClass = record.changePct > 0 ? 'positive' : record.changePct < 0 ? 'negative' : 'neutral';
         const lowHighText = record.low !== '-' && record.high !== '-' 
             ? `${formatNum(record.low, 4)} - ${formatNum(record.high, 4)}` 
             : '-';
@@ -195,8 +196,8 @@ function renderSavedTable(records) {
             <td>${record.longName || '-'}</td>
             <td>${pmcText}</td>
             <td>${formatNum(record.priceEur, 2)} €</td>
-            <td>${pctText}</td>
-            <td>${pctComplessiva}</td>
+            <td class="${pctClass}">${pctText}</td>
+            <td class="${pctComplessiva.startsWith('+') ? 'positive' : pctComplessiva.startsWith('-') ? 'negative' : 'neutral'}">${pctComplessiva}</td>
             <td>${lowHighText}</td>
         `;
         tbody.appendChild(tr);
