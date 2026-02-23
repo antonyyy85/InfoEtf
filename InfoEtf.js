@@ -161,7 +161,7 @@ function renderSavedTable(records) {
     if (!displayRecords.length) {
         const tr = document.createElement('tr');
         const td = document.createElement('td');
-        td.colSpan = 8;
+        td.colSpan = 11;
         td.textContent = 'Nessun record salvato.';
         tr.appendChild(td);
         tbody.appendChild(tr);
@@ -193,6 +193,14 @@ function renderSavedTable(records) {
             const pct = ((record.priceEur * 100) / record.pmc) - 100;
             pctComplessiva = `${pct >= 0 ? '+' : ''}${pct.toFixed(2)} %`;
         }
+        const invText = record.inv ? formatNum(record.inv, 0) + ' €' : '-';
+        // Calculate Val (Valore Totale) = Inv * pctTotale
+        let valText = '-';
+        if (record.inv && record.pmc && record.priceEur) {
+            const pctTotale = ((record.priceEur * 100) / record.pmc) - 100;
+            const val = record.inv * (pctTotale / 100 + 1);
+            valText = formatNum(val, 0) + ' €';
+        }
         tr.innerHTML = `
             <td class="row-num" title="Trascina per riordinare">${index + 1}</td>
             <td>${record.isin || '-'}</td>
@@ -201,6 +209,8 @@ function renderSavedTable(records) {
             <td>${formatNum(record.priceEur, 2)} €</td>
             <td class="${pctClass}">${pctText}</td>
             <td class="${pctComplessiva.startsWith('+') ? 'positive' : pctComplessiva.startsWith('-') ? 'negative' : 'neutral'}">${pctComplessiva}</td>
+            <td>${invText}</td>
+            <td>${valText}</td>
             <td>${lowHighText}</td>
         `;
         tbody.appendChild(tr);
@@ -305,6 +315,22 @@ function compareBySortKey(a, b) {
             av = Number(a.changePct) || 0;
             bv = Number(b.changePct) || 0;
             break;
+        case 'pmc':
+            av = Number(a.pmc) || 0;
+            bv = Number(b.pmc) || 0;
+            break;
+        case 'inv':
+            av = Number(a.inv) || 0;
+            bv = Number(b.inv) || 0;
+            break;
+        case 'val':
+            av = calcVal(a);
+            bv = calcVal(b);
+            break;
+        case 'pctTotale':
+            av = calcPctTotale(a);
+            bv = calcPctTotale(b);
+            break;
         case 'rowNo':
         default:
             av = new Date(a.timestamp).getTime();
@@ -315,6 +341,21 @@ function compareBySortKey(a, b) {
     if (av < bv) return sortState.direction === 'asc' ? -1 : 1;
     if (av > bv) return sortState.direction === 'asc' ? 1 : -1;
     return 0;
+}
+
+function calcPctTotale(record) {
+    if (record.pmc && record.priceEur) {
+        return ((record.priceEur * 100) / record.pmc) - 100;
+    }
+    return null;
+}
+
+function calcVal(record) {
+    if (record.inv && record.pmc && record.priceEur) {
+        const pctTotale = ((record.priceEur * 100) / record.pmc) - 100;
+        return record.inv * (pctTotale / 100 + 1);
+    }
+    return null;
 }
 
 function setSort(key) {
@@ -516,6 +557,9 @@ function initInfoEtfStateRaw() {
 
 function formatNum(n, decimals) {
     if (n === undefined || n === null || n === '-') return '-';
+    if (decimals === 0) {
+        return parseInt(n, 10).toLocaleString('it-IT');
+    }
     return parseFloat(n).toLocaleString('it-IT', {
         minimumFractionDigits: 2,
         maximumFractionDigits: decimals
@@ -536,10 +580,13 @@ function showPopup(record) {
     
     // Set PMC value
     document.getElementById('pmcInput').value = record.pmc || '';
+    // Set Inv value
+    document.getElementById('invInput').value = record.inv || '';
     
     const body = document.getElementById('popupBody');
     const pctText = Number.isFinite(record.changePct) ? `${record.changePct >= 0 ? '+' : ''}${record.changePct.toFixed(2)}%` : '-';
     const priceText = `${formatNum(record.price, 4)} ${record.currency || ''}`.trim();
+    const invText = record.inv ? parseInt(record.inv, 10).toLocaleString('it-IT') : '-';
     
     body.innerHTML = `
         <div class="popup-row"><span class="popup-label">ISIN</span><span class="popup-value">${record.isin || '-'}</span></div>
@@ -554,6 +601,7 @@ function showPopup(record) {
         <div class="popup-row"><span class="popup-label">Volume</span><span class="popup-value">${record.volume ? parseInt(record.volume, 10).toLocaleString('it-IT') : '-'}</span></div>
         <div class="popup-row"><span class="popup-label">Mercato</span><span class="popup-value">${record.exchange || '-'}</span></div>
         <div class="popup-row"><span class="popup-label">Valuta</span><span class="popup-value">${record.currency || '-'}</span></div>
+        <div class="popup-row"><span class="popup-label">Inv</span><span class="popup-value">${invText}</span></div>
     `;
     
     popup.classList.add('visible');
@@ -574,12 +622,16 @@ function savePmc() {
     const pmcValue = document.getElementById('pmcInput').value;
     const pmc = pmcValue ? parseFloat(pmcValue) : null;
     
+    const invValue = document.getElementById('invInput').value;
+    const inv = invValue ? parseFloat(invValue) : null;
+    
     // Find and update the record in local storage
     const records = getSavedRecords();
     const recordIndex = records.findIndex(r => r.timestamp === currentPopupRecord.timestamp);
     
     if (recordIndex !== -1) {
         records[recordIndex].pmc = pmc;
+        records[recordIndex].inv = inv;
         saveRecords(records);
         renderSavedTable(records);
     }
