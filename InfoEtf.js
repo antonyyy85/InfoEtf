@@ -195,26 +195,34 @@ function renderSavedTable(records) {
         }
         const invText = record.inv ? formatNum(record.inv, 0) + ' €' : '-';
         // Calculate Val (Valore Totale) = Inv * pctTotale
-        let valText = '-';
+        let valText = '-'; 
+        let diffText = '-';
+        let diff = 0;
         if (record.inv && record.pmc && record.priceEur) {
             const pctTotale = ((record.priceEur * 100) / record.pmc) - 100;
             const val = record.inv * (pctTotale / 100 + 1);
             valText = formatNum(val, 0) + ' €';
+            diff = val - record.inv;
+            diffText = (diff >= 0 ? '+' : '') + formatNum(diff, 0) + ' €';
         }
         tr.innerHTML = `
             <td class="row-num" title="Trascina per riordinare">${index + 1}</td>
             <td>${record.isin || '-'}</td>
             <td>${displayName}</td>
-            <td>${pmcText}</td>
+            <td style="text-align: right;">${pmcText}</td>
             <td>${formatNum(record.priceEur, 2)} €</td>
             <td class="${pctClass}">${pctText}</td>
             <td class="${pctComplessiva.startsWith('+') ? 'positive' : pctComplessiva.startsWith('-') ? 'negative' : 'neutral'}">${pctComplessiva}</td>
             <td>${invText}</td>
+            <td class="${diff >= 0 ? 'positive' : 'negative'}">${diffText}</td>
             <td>${valText}</td>
             <td>${lowHighText}</td>
         `;
         tbody.appendChild(tr);
     });
+    
+    // Update totals
+    updateTotals(records);
 }
 
 function handleDragStart(e) {
@@ -791,3 +799,40 @@ renderSavedTable(getSavedRecords());
 renderInfoEtfStateRaw();
 initInfoEtfStateRaw();
 
+function updateTotals(records) {
+    const totalInvEl = document.getElementById('totalInv');
+    const totalValEl = document.getElementById('totalVal');
+    const totalDiffEl = document.getElementById('totalDiff');
+    
+    if (!totalInvEl || !totalValEl || !totalDiffEl) return;
+    
+    let totalInv = 0;
+    let totalVal = 0;
+    
+    records.forEach(record => {
+        // Inv è semplicemente il numero di azioni/quote
+        if (record.inv) {
+            totalInv += record.inv;
+        }
+        
+        // Val = Inv * (pctTotale/100 + 1)
+        if (record.inv && record.pmc && record.priceEur) {
+            const pctTotale = ((record.priceEur * 100) / record.pmc) - 100;
+            const val = record.inv * (pctTotale / 100 + 1);
+            totalVal += val;
+        }
+    });
+    
+    const diff = totalVal - totalInv;
+    
+    totalInvEl.textContent = formatNum(totalInv, 0) + ' €';
+    totalValEl.textContent = formatNum(totalVal, 0) + ' €';
+    
+    if (diff >= 0) {
+        totalDiffEl.textContent = '+' + formatNum(diff, 0) + ' €';
+        totalDiffEl.className = 'total-value positive';
+    } else {
+        totalDiffEl.textContent = formatNum(diff, 0) + ' €';
+        totalDiffEl.className = 'total-value negative';
+    }
+}

@@ -93,19 +93,22 @@
                             <th class="sortable" onclick="setSort('priceEur')">
                                 <div class="header-content">Prezzo</div>
                             </th>
-                            <th class="sortable" onclick="setSort('changePct')">
+                            <th class="sortable" onclick="setSort('changePct')" style="text-align: center;">
                                 <div class="header-content">% Oggi</div>
                             </th>
                             <th class="sortable" onclick="setSort('pctTotale')">
                                 <div class="header-content">% Totale</div>
                             </th>
-                            <th class="sortable" onclick="setSort('inv')" title="Totale Investito">
+                            <th class="sortable" onclick="setSort('inv')" title="Totale Investito" style="text-align: center;">
                                 <div class="header-content">Inv</div>
+                            </th>
+                            <th class="sortable" onclick="setSort('diff')" title="Differenza tra Val e Inv">
+                                <div class="header-content">Saldo</div>
                             </th>
                             <th class="sortable" onclick="setSort('val')" title="Valore Totale">
                                 <div class="header-content">Val</div>
                             </th>
-                            <th>
+                            <th style="text-align: center;">
                                 <div class="header-content">Low-High</div>
                             </th>
                         </tr>
@@ -115,8 +118,19 @@
             </div>
         </div>
 
-        <div class="test-box">
-            ciao
+        <div class="test-box" id="totalsBox">
+            <div class="total-row">
+                <span class="total-label">Totale Investito:</span>
+                <span class="total-value" id="totalInv">-</span>
+            </div>
+            <div class="total-row">
+                <span class="total-label">Controvalore:</span>
+                <span class="total-value" id="totalVal">-</span>
+            </div>
+            <div class="total-row">
+                <span class="total-label">Saldo:</span>
+                <span class="total-value" id="totalDiff">-</span>
+            </div>
         </div>
     </div>
 

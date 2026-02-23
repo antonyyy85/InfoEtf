@@ -646,3 +646,33 @@ tbody td.row-num {
     font-size: 16px;
     color: var(--text);
 }
+
+.test-box .total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.test-box .total-row:last-child {
+    border-bottom: none;
+}
+
+.test-box .total-label {
+    font-weight: 600;
+    color: var(--text-soft);
+}
+
+.test-box .total-value {
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.test-box .total-value.positive {
+    color: var(--ok-text);
+}
+
+.test-box .total-value.negative {
+    color: var(--bad-text);
+}
