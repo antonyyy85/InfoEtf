@@ -36,7 +36,7 @@ async function searchISIN() {
     btn.disabled = true;
 
     try {
-        const searchUrl = `${encodeURIComponent(`https://query1.finance.yahoo.com/v1/finance/search?q=${inputCode}&quotesCount=1&newsCount=0`)}`;
+        const searchUrl = `${(`https://query1.finance.yahoo.com/v1/finance/search?q=${inputCode}&quotesCount=1&newsCount=0`)}`;
         const searchResp = await fetch(searchUrl);
         if (!searchResp.ok) throw new Error('Errore nella ricerca del titolo.');
 
@@ -49,7 +49,7 @@ async function searchISIN() {
         const symbol = quotes[0].symbol;
         const longName = quotes[0].longname || quotes[0].shortname || symbol;
 
-        const quoteUrl = `${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d`)}`;
+        const quoteUrl = `${(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d`)}`;
         const quoteResp = await fetch(quoteUrl);
         if (!quoteResp.ok) throw new Error('Errore nel recupero della quotazione.');
 
@@ -369,7 +369,7 @@ async function refreshSavedRecords() {
             }
 
             try {
-                const quoteUrl = `${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${record.symbol}?interval=1d&range=1d`)}`;
+                const quoteUrl = `${(`https://query1.finance.yahoo.com/v8/finance/chart/${record.symbol}?interval=1d&range=1d`)}`;
                 const quoteResp = await fetch(quoteUrl);
                 if (!quoteResp.ok) throw new Error('Quote request failed');
 
@@ -434,7 +434,7 @@ async function getPriceInEur(price, currency) {
     let rate = fxRateCache[ccy];
     if (!rate) {
         try {
-            const fxUrl = `https://api.frankfurter.app/latest?from=${encodeURIComponent(ccy)}&to=EUR`;
+            const fxUrl = `https://api.frankfurter.app/latest?from=${(ccy)}&to=EUR`;
             const resp = await fetch(fxUrl);
             if (!resp.ok) throw new Error('FX request failed');
             const data = await resp.json();
@@ -589,7 +589,7 @@ async function searchByName() {
     btn.disabled = true;
 
     try {
-        const searchUrl = `${encodeURIComponent(`https://query1.finance.yahoo.com/v1/finance/search?q=${inputName}&quotesCount=10&newsCount=0`)}`;
+        const searchUrl = `${(`https://query1.finance.yahoo.com/v1/finance/search?q=${inputName}&quotesCount=10&newsCount=0`)}`;
         const searchResp = await fetch(searchUrl);
         if (!searchResp.ok) throw new Error('Errore nella ricerca del titolo.');
 
@@ -604,7 +604,7 @@ async function searchByName() {
         const symbol = quote.symbol;
         const longName = quote.longname || quote.shortname || symbol;
 
-        const quoteUrl = `${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d`)}`;
+        const quoteUrl = `${(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d`)}`;
         const quoteResp = await fetch(quoteUrl);
         if (!quoteResp.ok) throw new Error('Errore nel recupero della quotazione.');
 
