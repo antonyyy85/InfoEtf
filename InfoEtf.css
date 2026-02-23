@@ -30,12 +30,54 @@ body {
         radial-gradient(circle at 90% 20%, #e5f0ff 0, transparent 24%),
         linear-gradient(160deg, var(--bg-a) 0%, var(--bg-b) 100%);
     padding: 20px;
+    display: flex;
+    flex-direction: column;
 }
 
 .container {
     padding: 20px;
     width: 100%;
-    min-height: 100vh;
+    flex: 1;
+}
+
+.app-footer {
+    width: 100%;
+    margin-top: 16px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(6px);
+}
+
+.app-footer .footer-title {
+    font-size: 12px;
+    color: var(--text-soft);
+    margin-bottom: 8px;
+}
+
+.app-footer .footer-title code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 12px;
+}
+
+.footer-raw {
+    width: 100%;
+    resize: vertical;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 12px;
+    line-height: 1.35;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.footer-raw:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(31, 79, 130, 0.12);
 }
 
 .search-section {

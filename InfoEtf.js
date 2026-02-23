@@ -183,6 +183,9 @@ function renderSavedTable(records) {
         const lowHighText = record.low !== '-' && record.high !== '-' 
             ? `${formatNum(record.low, 4)} - ${formatNum(record.high, 4)}` 
             : '-';
+        const displayName = record.currency
+            ? `${record.longName || '-'} (${record.currency})`
+            : (record.longName || '-');
         const pmcText = record.pmc ? formatNum(record.pmc, 4) + ' €' : '-';
         // Calculate % between PMC and current price
         let pctComplessiva = '-';
@@ -193,7 +196,7 @@ function renderSavedTable(records) {
         tr.innerHTML = `
             <td class="row-num" title="Trascina per riordinare">${index + 1}</td>
             <td>${record.isin || '-'}</td>
-            <td>${record.longName || '-'}</td>
+            <td>${displayName}</td>
             <td>${pmcText}</td>
             <td>${formatNum(record.priceEur, 2)} €</td>
             <td class="${pctClass}">${pctText}</td>
@@ -472,6 +475,43 @@ function saveAppState(state) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
         records: Array.isArray(state.records) ? state.records : []
     }));
+    renderInfoEtfStateRaw();
+}
+
+function getInfoEtfStateRaw() {
+    try {
+        return localStorage.getItem(STORAGE_KEY) || '';
+    } catch (_) {
+        return '';
+    }
+}
+
+function renderInfoEtfStateRaw() {
+    const el = document.getElementById('infoEtfStateRaw');
+    if (!el) return;
+    el.value = getInfoEtfStateRaw();
+}
+
+function initInfoEtfStateRaw() {
+    const el = document.getElementById('infoEtfStateRaw');
+    if (!el) return;
+    el.addEventListener('input', () => {
+        try {
+            const raw = el.value.trim();
+            if (raw) {
+                // Validate JSON before saving
+                JSON.parse(raw);
+            }
+            localStorage.setItem(STORAGE_KEY, raw);
+            // Reload state if valid JSON
+            if (raw) {
+                const records = getSavedRecords();
+                renderSavedTable(records);
+            }
+        } catch (e) {
+            // Allow typing but don't save invalid JSON until it's fixed
+        }
+    });
 }
 
 function formatNum(n, decimals) {
@@ -565,6 +605,11 @@ function showError(msg) {
     box.innerHTML = '[!] ' + msg;
     box.classList.add('visible');
 }
+
+// Keep debug footer in sync also when localStorage is edited from DevTools or other tabs
+window.addEventListener('storage', (e) => {
+    if (e && e.key === STORAGE_KEY) renderInfoEtfStateRaw();
+});
 
 document.getElementById('isin').addEventListener('keydown', e => {
     if (e.key === 'Enter') searchISIN();
@@ -691,3 +736,6 @@ function updateLastUpdateLabel(date) {
     }
 }
 renderSavedTable(getSavedRecords());
+renderInfoEtfStateRaw();
+initInfoEtfStateRaw();
+
