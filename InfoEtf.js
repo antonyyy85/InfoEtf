@@ -165,6 +165,10 @@ function renderSavedTable(records) {
         td.textContent = 'Nessun record salvato.';
         tr.appendChild(td);
         tbody.appendChild(tr);
+        
+        // Clear mobile cards
+        const mobileCards = document.getElementById('mobileCards');
+        mobileCards.innerHTML = '<div class="mobile-card" style="text-align: center; color: var(--text-soft);">Nessun record salvato.</div>';
         return;
     }
 
@@ -189,21 +193,25 @@ function renderSavedTable(records) {
         const pmcText = record.pmc ? formatNum(record.pmc, 4) + ' €' : '-';
         // Calculate % between PMC and current price
         let pctComplessiva = '-';
+        let pctComplessivaClass = 'neutral';
         if (record.pmc && record.priceEur) {
             const pct = ((record.priceEur * 100) / record.pmc) - 100;
             pctComplessiva = `${pct >= 0 ? '+' : ''}${pct.toFixed(2)} %`;
+            pctComplessivaClass = pct >= 0 ? 'positive' : 'negative';
         }
         const invText = record.inv ? formatNum(record.inv, 0) + ' €' : '-';
         // Calculate Val (Valore Totale) = Inv * pctTotale
         let valText = '-'; 
         let diffText = '-';
         let diff = 0;
+        let diffClass = 'neutral';
         if (record.inv && record.pmc && record.priceEur) {
             const pctTotale = ((record.priceEur * 100) / record.pmc) - 100;
             const val = record.inv * (pctTotale / 100 + 1);
             valText = formatNum(val, 0) + ' €';
             diff = val - record.inv;
             diffText = (diff >= 0 ? '+' : '') + formatNum(diff, 0) + ' €';
+            diffClass = diff >= 0 ? 'positive' : 'negative';
         }
         tr.innerHTML = `
             <td class="row-num" title="Trascina per riordinare">${index + 1}</td>
@@ -212,17 +220,76 @@ function renderSavedTable(records) {
             <td style="text-align: right;">${pmcText}</td>
             <td>${formatNum(record.priceEur, 2)} €</td>
             <td class="${pctClass}">${pctText}</td>
-            <td class="${pctComplessiva.startsWith('+') ? 'positive' : pctComplessiva.startsWith('-') ? 'negative' : 'neutral'}">${pctComplessiva}</td>
+            <td class="${pctComplessivaClass}">${pctComplessiva}</td>
             <td>${invText}</td>
-            <td class="${diff >= 0 ? 'positive' : 'negative'}">${diffText}</td>
+            <td class="${diffClass}">${diffText}</td>
             <td>${valText}</td>
             <td>${lowHighText}</td>
         `;
         tbody.appendChild(tr);
     });
     
+    // Render mobile cards
+    renderMobileCards(displayRecords);
+    
     // Update totals
     updateTotals(records);
+}
+
+function renderMobileCards(displayRecords) {
+    const mobileCards = document.getElementById('mobileCards');
+    mobileCards.innerHTML = '';
+    
+    displayRecords.forEach((record, index) => {
+        const pctText = Number.isFinite(record.changePct) ? `${record.changePct >= 0 ? '+' : ''}${record.changePct.toFixed(2)} %` : '-';
+        const pctClass = record.changePct > 0 ? 'positive' : record.changePct < 0 ? 'negative' : 'neutral';
+        
+        let pctComplessiva = '-';
+        let pctComplessivaClass = 'neutral';
+        if (record.pmc && record.priceEur) {
+            const pct = ((record.priceEur * 100) / record.pmc) - 100;
+            pctComplessiva = `${pct >= 0 ? '+' : ''}${pct.toFixed(2)} %`;
+            pctComplessivaClass = pct >= 0 ? 'positive' : 'negative';
+        }
+        
+        let diffText = '-';
+        let diffClass = 'neutral';
+        if (record.inv && record.pmc && record.priceEur) {
+            const pctTotale = ((record.priceEur * 100) / record.pmc) - 100;
+            const val = record.inv * (pctTotale / 100 + 1);
+            const diff = val - record.inv;
+            diffText = (diff >= 0 ? '+' : '') + formatNum(diff, 0) + ' €';
+            diffClass = diff >= 0 ? 'positive' : 'negative';
+        }
+        
+        const displayName = record.currency
+            ? `${record.longName || '-'} (${record.currency})`
+            : (record.longName || '-');
+        
+        const card = document.createElement('div');
+        card.className = 'mobile-card';
+        card.addEventListener('click', () => showPopup(record));
+        
+        card.innerHTML = `
+            <div class="mobile-card-header">
+                <div class="mobile-card-name">${index + 1}. ${displayName}</div>
+            </div>
+            <div class="mobile-card-row">
+                <span class="mobile-card-label">% Oggi</span>
+                <span class="mobile-card-value ${pctClass}">${pctText}</span>
+            </div>
+            <div class="mobile-card-row">
+                <span class="mobile-card-label">% Totale</span>
+                <span class="mobile-card-value ${pctComplessivaClass}">${pctComplessiva}</span>
+            </div>
+            <div class="mobile-card-row">
+                <span class="mobile-card-label">Saldo</span>
+                <span class="mobile-card-value ${diffClass}">${diffText}</span>
+            </div>
+        `;
+        
+        mobileCards.appendChild(card);
+    });
 }
 
 function handleDragStart(e) {
