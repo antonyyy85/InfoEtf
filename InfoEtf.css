@@ -501,14 +501,14 @@ th .header-content {
     .mobile-cards {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 8px;
     }
 
     .mobile-card {
         background: var(--surface);
         border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 14px 16px;
+        border-radius: 10px;
+        padding: 10px 12px;
         cursor: pointer;
         transition: background-color 0.15s;
     }
@@ -521,21 +521,21 @@ th .header-content {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 10px;
+        margin-bottom: 6px;
     }
 
     .mobile-card-name {
         font-weight: 700;
-        font-size: 15px;
+        font-size: 14px;
         color: var(--text);
         flex: 1;
-        margin-right: 10px;
+        margin-right: 8px;
     }
 
     .mobile-card-row {
         display: flex;
         justify-content: space-between;
-        padding: 6px 0;
+        padding: 4px 0;
         border-bottom: 1px solid var(--border);
     }
 
@@ -545,12 +545,12 @@ th .header-content {
 
     .mobile-card-label {
         color: var(--text-soft);
-        font-size: 13px;
+        font-size: 12px;
     }
 
     .mobile-card-value {
         font-weight: 600;
-        font-size: 13px;
+        font-size: 12px;
     }
 
     .mobile-card-value.positive {

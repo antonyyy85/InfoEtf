@@ -849,6 +849,14 @@ if (filterState.lastUpdate) {
     updateLastUpdateLabel(new Date(filterState.lastUpdate));
 }
 
+// Auto-refresh every minute
+setInterval(() => {
+    const records = getSavedRecords();
+    if (records.length > 0) {
+        refreshSavedRecords();
+    }
+}, 60000);
+
 function updateLastUpdateLabel(date) {
     const label = document.getElementById('lastUpdateLabel');
     if (label) {
