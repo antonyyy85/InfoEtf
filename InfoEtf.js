@@ -200,11 +200,27 @@ function renderSavedTable(records) {
             pctComplessivaClass = pct >= 0 ? 'positive' : 'negative';
         }
         const invText = record.inv ? formatNum(record.inv, 0) + ' €' : '-';
+        // Calculate NQuote = Inv / PMC (arrotondato all'intero più vicino)
+        let nQuoteText = '-';
+        if (record.nQuote) {
+            nQuoteText = record.nQuote.toLocaleString('it-IT');
+        } else if (record.inv && record.pmc) {
+            nQuoteText = Math.round(record.inv / record.pmc).toLocaleString('it-IT');
+        }
         // Calculate Val (Valore Totale) = Inv * pctTotale
         let valText = '-'; 
         let diffText = '-';
         let diff = 0;
         let diffClass = 'neutral';
+        // Calculate Saldo Oggi = (Inv / 100) * % Oggi
+        let diffOggiText = '-';
+        let diffOggi = 0;
+        let diffOggiClass = 'neutral';
+        if (record.inv && record.changePct) {
+            diffOggi = (record.inv / 100) * record.changePct;
+            diffOggiText = (diffOggi >= 0 ? '+' : '') + formatNum(diffOggi, 0) + ' €';
+            diffOggiClass = diffOggi >= 0 ? 'positive' : 'negative';
+        }
         if (record.inv && record.pmc && record.priceEur) {
             const pctTotale = ((record.priceEur * 100) / record.pmc) - 100;
             const val = record.inv * (pctTotale / 100 + 1);
@@ -222,7 +238,9 @@ function renderSavedTable(records) {
             <td class="${pctClass}">${pctText}</td>
             <td class="${pctComplessivaClass}">${pctComplessiva}</td>
             <td>${invText}</td>
+            <td>${nQuoteText}</td>
             <td class="${diffClass}">${diffText}</td>
+            <td class="${diffOggiClass}">${diffOggiText}</td>
             <td>${valText}</td>
             <td>${lowHighText}</td>
         `;
@@ -262,6 +280,15 @@ function renderMobileCards(displayRecords) {
             diffClass = diff >= 0 ? 'positive' : 'negative';
         }
         
+        // Calculate Saldo Oggi = (Inv / 100) * % Oggi
+        let diffOggiText = '-';
+        let diffOggiClass = 'neutral';
+        if (record.inv && record.changePct) {
+            const diffOggi = (record.inv / 100) * record.changePct;
+            diffOggiText = (diffOggi >= 0 ? '+' : '') + formatNum(diffOggi, 0) + ' €';
+            diffOggiClass = diffOggi >= 0 ? 'positive' : 'negative';
+        }
+        
         const displayName = record.currency
             ? `${record.longName || '-'} (${record.currency})`
             : (record.longName || '-');
@@ -283,8 +310,12 @@ function renderMobileCards(displayRecords) {
                 <span class="mobile-card-value ${pctComplessivaClass}">${pctComplessiva}</span>
             </div>
             <div class="mobile-card-row">
-                <span class="mobile-card-label">Saldo</span>
+                <span class="mobile-card-label">Saldo totale</span>
                 <span class="mobile-card-value ${diffClass}">${diffText}</span>
+            </div>
+            <div class="mobile-card-row">
+                <span class="mobile-card-label">Saldo Oggi</span>
+                <span class="mobile-card-value ${diffOggiClass}">${diffOggiText}</span>
             </div>
         `;
         
@@ -398,6 +429,10 @@ function compareBySortKey(a, b) {
             av = Number(a.inv) || 0;
             bv = Number(b.inv) || 0;
             break;
+        case 'nQuote':
+            av = Number(a.nQuote) || 0;
+            bv = Number(b.nQuote) || 0;
+            break;
         case 'val':
             av = calcVal(a);
             bv = calcVal(b);
@@ -405,6 +440,14 @@ function compareBySortKey(a, b) {
         case 'pctTotale':
             av = calcPctTotale(a);
             bv = calcPctTotale(b);
+            break;
+        case 'diff':
+            av = calcDiff(a);
+            bv = calcDiff(b);
+            break;
+        case 'diffOggi':
+            av = calcDiffOggi(a);
+            bv = calcDiffOggi(b);
             break;
         case 'rowNo':
         default:
@@ -421,6 +464,22 @@ function compareBySortKey(a, b) {
 function calcPctTotale(record) {
     if (record.pmc && record.priceEur) {
         return ((record.priceEur * 100) / record.pmc) - 100;
+    }
+    return null;
+}
+
+function calcDiff(record) {
+    if (record.inv && record.pmc && record.priceEur) {
+        const pctTotale = ((record.priceEur * 100) / record.pmc) - 100;
+        const val = record.inv * (pctTotale / 100 + 1);
+        return val - record.inv;
+    }
+    return null;
+}
+
+function calcDiffOggi(record) {
+    if (record.inv && record.changePct) {
+        return (record.inv / 100) * record.changePct;
     }
     return null;
 }
@@ -663,6 +722,16 @@ function showPopup(record) {
     const priceText = `${formatNum(record.price, 4)} ${record.currency || ''}`.trim();
     const invText = record.inv ? parseInt(record.inv, 10).toLocaleString('it-IT') : '-';
     
+    // Calculate NQuote = Inv / PMC (arrotondato all'intero più vicino)
+    // Usa il valore salvato se disponibile, altrimenti calcola
+    let nQuoteText = '-';
+    if (record.nQuote) {
+        nQuoteText = record.nQuote.toLocaleString('it-IT');
+    } else if (record.inv && record.pmc) {
+        const nQuote = Math.round(record.inv / record.pmc);
+        nQuoteText = nQuote.toLocaleString('it-IT');
+    }
+    
     body.innerHTML = `
         <div class="popup-row"><span class="popup-label">ISIN</span><span class="popup-value">${record.isin || '-'}</span></div>
         <div class="popup-row"><span class="popup-label">Simbolo</span><span class="popup-value">${record.symbol || '-'}</span></div>
@@ -677,6 +746,7 @@ function showPopup(record) {
         <div class="popup-row"><span class="popup-label">Mercato</span><span class="popup-value">${record.exchange || '-'}</span></div>
         <div class="popup-row"><span class="popup-label">Valuta</span><span class="popup-value">${record.currency || '-'}</span></div>
         <div class="popup-row"><span class="popup-label">Inv</span><span class="popup-value">${invText}</span></div>
+        <div class="popup-row"><span class="popup-label">NQuote</span><span class="popup-value">${nQuoteText}</span></div>
     `;
     
     popup.classList.add('visible');
@@ -700,6 +770,12 @@ function savePmc() {
     const invValue = document.getElementById('invInput').value;
     const inv = invValue ? parseFloat(invValue) : null;
     
+    // Calculate NQuote = Inv / PMC (arrotondato all'intero più vicino)
+    let nQuote = null;
+    if (inv && pmc) {
+        nQuote = Math.round(inv / pmc);
+    }
+    
     // Find and update the record in local storage
     const records = getSavedRecords();
     const recordIndex = records.findIndex(r => r.timestamp === currentPopupRecord.timestamp);
@@ -707,6 +783,7 @@ function savePmc() {
     if (recordIndex !== -1) {
         records[recordIndex].pmc = pmc;
         records[recordIndex].inv = inv;
+        records[recordIndex].nQuote = nQuote;
         saveRecords(records);
         renderSavedTable(records);
     }
@@ -871,18 +948,37 @@ function updateLastUpdateLabel(date) {
     }
 }
 renderSavedTable(getSavedRecords());
+migrateNQuote();
 renderInfoEtfStateRaw();
 initInfoEtfStateRaw();
+
+function migrateNQuote() {
+    const records = getSavedRecords();
+    let needsSave = false;
+    
+    records.forEach(record => {
+        if (record.inv && record.pmc && !record.nQuote) {
+            record.nQuote = Math.round(record.inv / record.pmc);
+            needsSave = true;
+        }
+    });
+    
+    if (needsSave) {
+        saveRecords(records);
+    }
+}
 
 function updateTotals(records) {
     const totalInvEl = document.getElementById('totalInv');
     const totalValEl = document.getElementById('totalVal');
     const totalDiffEl = document.getElementById('totalDiff');
+    const totalDiffOggiEl = document.getElementById('totalDiffOggi');
     
-    if (!totalInvEl || !totalValEl || !totalDiffEl) return;
+    if (!totalInvEl || !totalValEl || !totalDiffEl || !totalDiffOggiEl) return;
     
     let totalInv = 0;
     let totalVal = 0;
+    let totalDiffOggi = 0;
     
     records.forEach(record => {
         // Inv è semplicemente il numero di azioni/quote
@@ -895,6 +991,11 @@ function updateTotals(records) {
             const pctTotale = ((record.priceEur * 100) / record.pmc) - 100;
             const val = record.inv * (pctTotale / 100 + 1);
             totalVal += val;
+        }
+        
+        // Saldo Oggi = (Inv / 100) * % Oggi
+        if (record.inv && record.changePct) {
+            totalDiffOggi += (record.inv / 100) * record.changePct;
         }
     });
     
@@ -909,5 +1010,13 @@ function updateTotals(records) {
     } else {
         totalDiffEl.textContent = formatNum(diff, 0) + ' €';
         totalDiffEl.className = 'total-value negative';
+    }
+    
+    if (totalDiffOggi >= 0) {
+        totalDiffOggiEl.textContent = '+' + formatNum(totalDiffOggi, 0) + ' €';
+        totalDiffOggiEl.className = 'total-value positive';
+    } else {
+        totalDiffOggiEl.textContent = formatNum(totalDiffOggi, 0) + ' €';
+        totalDiffOggiEl.className = 'total-value negative';
     }
 }

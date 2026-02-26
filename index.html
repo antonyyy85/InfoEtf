@@ -104,8 +104,14 @@
                             <th class="sortable" onclick="setSort('inv')" title="Totale Investito" style="text-align: center;">
                                 <div class="header-content">Inv</div>
                             </th>
+                            <th class="sortable" onclick="setSort('nQuote')" title="Numero Quote (Inv/PMC arrotondato)">
+                                <div class="header-content">NQuote</div>
+                            </th>
                             <th class="sortable" onclick="setSort('diff')" title="Differenza tra Val e Inv">
-                                <div class="header-content">Saldo</div>
+                                <div class="header-content">Saldo totale</div>
+                            </th>
+                            <th class="sortable" onclick="setSort('diffOggi')" title="(Inv/100) * % Oggi">
+                                <div class="header-content">Saldo Oggi</div>
                             </th>
                             <th class="sortable" onclick="setSort('val')" title="Valore Totale">
                                 <div class="header-content">Val</div>
@@ -134,6 +140,10 @@
             <div class="total-row">
                 <span class="total-label">Differenza:</span>
                 <span class="total-value" id="totalDiff">-</span>
+            </div>
+            <div class="total-row">
+                <span class="total-label">Saldo Oggi:</span>
+                <span class="total-value" id="totalDiffOggi">-</span>
             </div>
         </div>
     </div>

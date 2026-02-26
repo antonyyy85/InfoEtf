@@ -29,13 +29,13 @@ body {
         radial-gradient(circle at 10% 0%, #d8e8fb 0, transparent 26%),
         radial-gradient(circle at 90% 20%, #e5f0ff 0, transparent 24%),
         linear-gradient(160deg, var(--bg-a) 0%, var(--bg-b) 100%);
-    padding: 20px;
+    padding: 1px;
     display: flex;
     flex-direction: column;
 }
 
 .container {
-    padding: 20px;
+    padding: 4px;
     width: 100%;
     flex: 1;
 }
@@ -288,7 +288,7 @@ button:disabled {
 
 .saved-section {
     margin-top: 32px;
-    padding: 20px;
+    padding: 5px;
     border-radius: 16px;
     border: 1px solid var(--border);
     background: var(--surface-soft);
@@ -340,7 +340,7 @@ table {
 
 th, td {
     border-bottom: 1px solid var(--border);
-    padding: 12px 14px;
+    padding: 5px 5px;
     text-align: left;
     white-space: nowrap;
     line-height: 1.4;
@@ -378,6 +378,38 @@ th:nth-child(5),
 th:nth-child(9),
 th:nth-child(11) {
     text-align: center;
+}
+
+/* Hide Low-High column */
+th:nth-child(13),
+td:nth-child(13) {
+    display: none;
+}
+
+/* Hide NQuote column */
+th:nth-child(9),
+td:nth-child(9) {
+    display: none;
+}
+
+/* Right align header for numeric columns */
+th:nth-child(4),  /* PMC */
+th:nth-child(5),  /* Prezzo */
+th:nth-child(6),  /* % Oggi */
+th:nth-child(8),  /* Inv */
+th:nth-child(11), /* Saldo Oggi */
+th:nth-child(12) { /* Val */
+    text-align: right !important;
+}
+
+/* Left align Nome column header */
+th:nth-child(3) {
+    text-align: left;
+}
+
+/* Right align Val column cells */
+td:nth-child(12) {
+    text-align: right;
 }
 
 /* Positive/Negative colors for percentage columns */
@@ -456,11 +488,11 @@ th .header-content {
 
 @media (max-width: 840px) {
     body {
-        padding: 10px;
+        padding: 1px;
     }
 
     .container {
-        padding: 18px;
+        padding: 5px;
         border-radius: 16px;
         min-height: calc(100vh - 20px);
     }
