@@ -212,12 +212,14 @@ function renderSavedTable(records) {
         let diffText = '-';
         let diff = 0;
         let diffClass = 'neutral';
-        // Calculate Saldo Oggi = (Inv / 100) * % Oggi
+        // Calculate Saldo Oggi = (Val / 100) * % Oggi
         let diffOggiText = '-';
         let diffOggi = 0;
         let diffOggiClass = 'neutral';
-        if (record.inv && record.changePct) {
-            diffOggi = (record.inv / 100) * record.changePct;
+        if (record.inv && record.pmc && record.priceEur && record.changePct) {
+            const pctTotale = ((record.priceEur * 100) / record.pmc) - 100;
+            const val = record.inv * (pctTotale / 100 + 1);
+            diffOggi = (val / 100) * record.changePct;
             diffOggiText = (diffOggi >= 0 ? '+' : '') + formatNum(diffOggi, 0) + ' €';
             diffOggiClass = diffOggi >= 0 ? 'positive' : 'negative';
         }
@@ -280,11 +282,13 @@ function renderMobileCards(displayRecords) {
             diffClass = diff >= 0 ? 'positive' : 'negative';
         }
         
-        // Calculate Saldo Oggi = (Inv / 100) * % Oggi
+        // Calculate Saldo Oggi = (Val / 100) * % Oggi
         let diffOggiText = '-';
         let diffOggiClass = 'neutral';
-        if (record.inv && record.changePct) {
-            const diffOggi = (record.inv / 100) * record.changePct;
+        if (record.inv && record.pmc && record.priceEur && record.changePct) {
+            const pctTotale = ((record.priceEur * 100) / record.pmc) - 100;
+            const val = record.inv * (pctTotale / 100 + 1);
+            const diffOggi = (val / 100) * record.changePct;
             diffOggiText = (diffOggi >= 0 ? '+' : '') + formatNum(diffOggi, 0) + ' €';
             diffOggiClass = diffOggi >= 0 ? 'positive' : 'negative';
         }
@@ -478,8 +482,10 @@ function calcDiff(record) {
 }
 
 function calcDiffOggi(record) {
-    if (record.inv && record.changePct) {
-        return (record.inv / 100) * record.changePct;
+    if (record.inv && record.pmc && record.priceEur && record.changePct) {
+        const pctTotale = ((record.priceEur * 100) / record.pmc) - 100;
+        const val = record.inv * (pctTotale / 100 + 1);
+        return (val / 100) * record.changePct;
     }
     return null;
 }
@@ -993,9 +999,11 @@ function updateTotals(records) {
             totalVal += val;
         }
         
-        // Saldo Oggi = (Inv / 100) * % Oggi
-        if (record.inv && record.changePct) {
-            totalDiffOggi += (record.inv / 100) * record.changePct;
+        // Saldo Oggi = (Val / 100) * % Oggi
+        if (record.inv && record.pmc && record.priceEur && record.changePct) {
+            const pctTotale = ((record.priceEur * 100) / record.pmc) - 100;
+            const val = record.inv * (pctTotale / 100 + 1);
+            totalDiffOggi += (val / 100) * record.changePct;
         }
     });
     
